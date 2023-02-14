@@ -61,4 +61,49 @@ export class UserService {
 
     return id
   }
+
+  async follow(id: User['id'], followId: User['id']): Promise<User | null> {
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: ['following']
+    })
+
+    const follow = await this.userRepository.findOne({
+      where: { id: followId },
+      relations: ['followers']
+    })
+
+    if (!user || !follow) return null
+
+    if (user.following.find((f) => f.id === followId)) {
+      user.following = user.following.filter((f) => f.id !== follow.id)
+    } else {
+      user.following.push(follow)
+    }
+
+    await this.userRepository.save(user)
+    return follow
+  }
+
+  async following(id: User['id']): Promise<User['following'] | null> {
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: ['following']
+    })
+
+    if (!user) return null
+
+    return user.following
+  }
+
+  async followers(id: User['id']): Promise<User['followers'] | null> {
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: ['followers']
+    })
+
+    if (!user) return null
+
+    return user.followers
+  }
 }

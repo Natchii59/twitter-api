@@ -1,5 +1,5 @@
 import { ObjectType, Field } from '@nestjs/graphql'
-import { Column, Entity, ManyToMany, OneToMany } from 'typeorm'
+import { Column, Entity, JoinTable, ManyToMany, OneToMany } from 'typeorm'
 
 import { Tweet } from '../../tweet/entities/tweet.entity'
 import { Node } from '../../database/entities/node.entity'
@@ -36,4 +36,17 @@ export class User extends Node {
     onDelete: 'CASCADE'
   })
   likedTweets: Tweet[]
+
+  @ManyToMany(() => User, (user) => user.following, {
+    onDelete: 'CASCADE'
+  })
+  @JoinTable({
+    name: 'user_followers'
+  })
+  followers: User[]
+
+  @ManyToMany(() => User, (user) => user.followers, {
+    onDelete: 'CASCADE'
+  })
+  following: User[]
 }

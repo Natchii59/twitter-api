@@ -48,6 +48,12 @@ type User {
 
   """Birthday of user"""
   birthday: DateTime!
+
+  """Get a user following"""
+  following: [User!]
+
+  """Get a user followers"""
+  followers: [User!]
 }
 
 type TokensOutput {
@@ -163,6 +169,12 @@ type Mutation {
 
   """Remove a user"""
   RemoveUser: User
+
+  """Follow a user"""
+  FollowUser(
+    """Id of user"""
+    id: ID!
+  ): User
 
   """Sign up User"""
   SignUp(input: CreateUserInput!): SignUpOutput!
