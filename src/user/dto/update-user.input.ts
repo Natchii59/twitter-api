@@ -31,12 +31,12 @@ export class UpdateUserInput {
     message: 'Le nom et prénom ne peuvent pas dépasser 50 caractères.'
   })
   @ValidateIf((_o, v) => v !== undefined)
-  name?: string
+  name?: User['name']
 
   @Field(() => Date, { description: 'Birthday of user', nullable: true })
   @IsDate({ message: 'La date de naissance est invalide.' })
   @ValidateIf((_o, v) => v !== undefined)
-  birthday?: Date
+  birthday?: User['birthday']
 
   @Field(() => String, { description: 'Password of user', nullable: true })
   @Matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/, {

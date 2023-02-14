@@ -1,22 +1,12 @@
-import { ObjectType, Field, ID } from '@nestjs/graphql'
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  ManyToMany,
-  OneToMany,
-  PrimaryGeneratedColumn
-} from 'typeorm'
+import { ObjectType, Field } from '@nestjs/graphql'
+import { Column, Entity, ManyToMany, OneToMany } from 'typeorm'
 
 import { Tweet } from '../../tweet/entities/tweet.entity'
+import { Node } from '../../database/entities/node.entity'
 
-@ObjectType()
 @Entity()
-export class User {
-  @PrimaryGeneratedColumn('uuid')
-  @Field(() => ID, { description: 'ID of user' })
-  id: string
-
+@ObjectType()
+export class User extends Node {
   @Column({ unique: true })
   @Field(() => String, { description: 'Username of user' })
   username: string
@@ -38,10 +28,6 @@ export class User {
 
   @Column({ name: 'resfresh_token', nullable: true })
   refreshToken?: string
-
-  @CreateDateColumn({ name: 'created_at' })
-  @Field(() => Date, { description: 'Date of user creation' })
-  createdAt: Date
 
   @OneToMany(() => Tweet, (tweet) => tweet.user)
   tweets: Tweet[]

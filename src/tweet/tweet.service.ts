@@ -1,10 +1,15 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+import { FindManyOptions, ILike, Repository } from 'typeorm'
 
 import { CreateTweetInput } from './dto/create-tweet.input'
 import { Tweet } from './entities/tweet.entity'
 import { User } from '../user/entities/user.entity'
+import {
+  PaginationTweet,
+  PaginationTweetArgs
+} from './dto/pagination-tweet.dto'
+import { SortDirection } from 'src/pagination/pagination.dto'
 
 @Injectable()
 export class TweetService {
@@ -23,8 +28,41 @@ export class TweetService {
     return await this.tweetRepository.save(tweet)
   }
 
-  async findAll(): Promise<Tweet[]> {
-    return await this.tweetRepository.find()
+  async pagination(args: PaginationTweetArgs): Promise<PaginationTweet> {
+    const options: FindManyOptions<Tweet> = {
+      skip: args.skip,
+      take: args.take
+    }
+
+    if (args.where) {
+      options.where = {}
+
+      Object.entries(args.where).forEach(([key, value]) => {
+        if (key === 'username') {
+          options.where['user'] = {}
+          options.where['user']['username'] = ILike(`%${value}%`)
+        } else {
+          if (typeof value === 'string')
+            options.where[key] = ILike(`%${value}%`)
+          else options.where[key] = value
+        }
+      })
+    }
+
+    if (args.sortBy) {
+      options.order = {}
+
+      Object.entries(args.sortBy).forEach(([key, value]) => {
+        options.order[key] = value === SortDirection.ASC ? 'ASC' : 'DESC'
+      })
+    }
+
+    const [nodes, totalCount] = await this.tweetRepository.findAndCount(options)
+
+    return {
+      nodes,
+      totalCount
+    }
   }
 
   async findOne(id: Tweet['id']): Promise<Tweet> {
@@ -65,5 +103,16 @@ export class TweetService {
     }
 
     return await this.tweetRepository.save(tweet)
+  }
+
+  async likes(id: Tweet['id']): Promise<User[] | null> {
+    const tweet = await this.tweetRepository.findOne({
+      where: { id },
+      relations: ['likedBy']
+    })
+
+    if (!tweet) return null
+
+    return tweet.likedBy
   }
 }

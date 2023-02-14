@@ -1,32 +1,23 @@
-import { ObjectType, Field, Int } from '@nestjs/graphql'
+import { ObjectType, Field } from '@nestjs/graphql'
 import {
   Column,
-  CreateDateColumn,
   Entity,
   JoinColumn,
   JoinTable,
   ManyToMany,
   ManyToOne,
-  PrimaryGeneratedColumn,
   RelationId
 } from 'typeorm'
 
 import { User } from '../../user/entities/user.entity'
+import { Node } from '../../database/entities/node.entity'
 
-@ObjectType()
 @Entity()
-export class Tweet {
-  @PrimaryGeneratedColumn()
-  @Field(() => Int, { description: 'Id of the tweet' })
-  id: number
-
+@ObjectType()
+export class Tweet extends Node {
   @Column()
   @Field(() => String, { description: 'Text of the tweet' })
   text: string
-
-  @CreateDateColumn({ name: 'created_at' })
-  @Field(() => Date, { description: 'Date of creation' })
-  createdAt: Date
 
   @ManyToOne(() => User, (user) => user.tweets, {
     onDelete: 'CASCADE'

@@ -17,7 +17,7 @@ export class TokensOutput {
   accessToken: string
 
   @Field(() => String, { description: 'Access Token of user' })
-  refreshToken: string
+  refreshToken: User['refreshToken']
 }
 
 @ObjectType()

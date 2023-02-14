@@ -19,6 +19,10 @@ import { User } from '../user/entities/user.entity'
 import { Services } from '../utils/constants'
 import { UserService } from '../user/user.service'
 import { LikeTweetArgs } from './dto/like-tweet.input'
+import {
+  PaginationTweet,
+  PaginationTweetArgs
+} from './dto/pagination-tweet.dto'
 
 @Resolver(() => Tweet)
 export class TweetResolver {
@@ -39,12 +43,12 @@ export class TweetResolver {
     return await this.tweetService.create(input, user.id)
   }
 
-  @Query(() => [Tweet], {
-    name: 'FindAllTweet',
-    description: 'Find all tweets'
+  @Query(() => PaginationTweet, {
+    name: 'PaginationTweet',
+    description: 'Find all tweets with pagination'
   })
-  async findAll() {
-    return await this.tweetService.findAll()
+  async pagination(@Args() args: PaginationTweetArgs) {
+    return await this.tweetService.pagination(args)
   }
 
   @Query(() => Tweet, {
@@ -85,5 +89,13 @@ export class TweetResolver {
     @CurrentUser() user: UserPayload
   ) {
     return await this.tweetService.like(args.id, user.id)
+  }
+
+  @ResolveField(() => [User], {
+    name: 'likes',
+    description: 'Get the number of likes of a tweet'
+  })
+  async likes(@Parent() tweet: Tweet) {
+    return await this.tweetService.likes(tweet.id)
   }
 }

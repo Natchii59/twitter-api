@@ -3,17 +3,23 @@
 # ------------------------------------------------------
 
 type Tweet {
-  """Id of the tweet"""
-  id: Int!
-
-  """Text of the tweet"""
-  text: String!
+  """Unique identifier"""
+  id: ID!
 
   """Date of creation"""
   createdAt: DateTime!
 
+  """Date of last update"""
+  updatedAt: DateTime!
+
+  """Text of the tweet"""
+  text: String!
+
   """Get the user who created the tweet"""
   user: User!
+
+  """Get the number of likes of a tweet"""
+  likes: [User!]!
 }
 
 """
@@ -22,8 +28,14 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 scalar DateTime
 
 type User {
-  """ID of user"""
+  """Unique identifier"""
   id: ID!
+
+  """Date of creation"""
+  createdAt: DateTime!
+
+  """Date of last update"""
+  updatedAt: DateTime!
 
   """Username of user"""
   username: String!
@@ -36,9 +48,6 @@ type User {
 
   """Birthday of user"""
   birthday: DateTime!
-
-  """Date of user creation"""
-  createdAt: DateTime!
 }
 
 type TokensOutput {
@@ -71,6 +80,12 @@ type SignUpOutput {
   user: User!
 }
 
+type PaginationTweet {
+  """Total number of nodes"""
+  totalCount: Int!
+  nodes: [Tweet!]!
+}
+
 type Query {
   """Get a user by args"""
   FindOneUser(input: FindOneUserInput!): User
@@ -84,13 +99,23 @@ type Query {
   """Refresh Tokens of current user"""
   RefreshTokens: TokensOutput!
 
-  """Find all tweets"""
-  FindAllTweet: [Tweet!]!
+  """Find all tweets with pagination"""
+  PaginationTweet(
+    """Skip the first n nodes"""
+    skip: Int!
+
+    """Take the first n nodes"""
+    take: Int!
+
+    """Sort nodes"""
+    sortBy: PaginationSortBy
+    where: PaginationTweetWhere
+  ): PaginationTweet!
 
   """Find one tweet"""
   FindOneTweet(
     """Id of tweet"""
-    id: Int!
+    id: ID!
   ): Tweet!
 }
 
@@ -103,6 +128,33 @@ input FindOneUserInput {
 
   """Email of user"""
   email: String
+}
+
+input PaginationSortBy {
+  """Sort by date of creation"""
+  createdAt: SortDirection
+
+  """Sort by date of last update"""
+  updatedAt: SortDirection
+}
+
+enum SortDirection {
+  ASC
+  DESC
+}
+
+input PaginationTweetWhere {
+  """Filter by id"""
+  id: ID
+
+  """Filter by content"""
+  text: String
+
+  """Filter by user id"""
+  userId: String
+
+  """Filter by username"""
+  username: String
 }
 
 type Mutation {
@@ -130,13 +182,13 @@ type Mutation {
   """Delete a tweet"""
   DeleteTweet(
     """Id of tweet"""
-    id: Int!
+    id: ID!
   ): Tweet!
 
   """Like a tweet"""
   LikeTweet(
     """Id of tweet"""
-    id: Int!
+    id: ID!
   ): Tweet!
 }
 
