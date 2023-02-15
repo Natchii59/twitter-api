@@ -4,7 +4,8 @@ import {
   Mutation,
   Args,
   ResolveField,
-  Parent
+  Parent,
+  ID
 } from '@nestjs/graphql'
 import { Inject, UseGuards } from '@nestjs/common'
 
@@ -23,6 +24,7 @@ import {
   PaginationTweet,
   PaginationTweetArgs
 } from './dto/pagination-tweet.dto'
+import { RetweetTweetArgs } from './dto/retweet-tweet.input'
 
 @Resolver(() => Tweet)
 export class TweetResolver {
@@ -60,7 +62,7 @@ export class TweetResolver {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Mutation(() => Tweet, {
+  @Mutation(() => ID, {
     name: 'DeleteTweet',
     description: 'Delete a tweet'
   })
@@ -93,9 +95,29 @@ export class TweetResolver {
 
   @ResolveField(() => [User], {
     name: 'likes',
-    description: 'Get the number of likes of a tweet'
+    description: 'Get the users who liked the tweet'
   })
   async likes(@Parent() tweet: Tweet) {
     return await this.tweetService.likes(tweet.id)
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Mutation(() => Tweet, {
+    name: 'Retweet',
+    description: 'Retweet a tweet'
+  })
+  async retweet(
+    @Args() args: RetweetTweetArgs,
+    @CurrentUser() user: UserPayload
+  ) {
+    return await this.tweetService.retweet(args.id, user.id)
+  }
+
+  @ResolveField(() => [User], {
+    name: 'retweets',
+    description: 'Get the users who retweeted the tweet'
+  })
+  async retweets(@Parent() tweet: Tweet) {
+    return await this.tweetService.retweets(tweet.id)
   }
 }

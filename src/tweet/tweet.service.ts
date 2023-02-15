@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { FindManyOptions, ILike, Repository } from 'typeorm'
 
@@ -9,7 +9,7 @@ import {
   PaginationTweet,
   PaginationTweetArgs
 } from './dto/pagination-tweet.dto'
-import { SortDirection } from 'src/pagination/pagination.dto'
+import { SortDirection } from '../pagination/pagination.dto'
 
 @Injectable()
 export class TweetService {
@@ -39,8 +39,10 @@ export class TweetService {
 
       Object.entries(args.where).forEach(([key, value]) => {
         if (key === 'username') {
-          options.where['user'] = {}
-          options.where['user']['username'] = ILike(`%${value}%`)
+          options.where = [
+            { user: { username: value } },
+            { retweetedBy: { username: value } }
+          ]
         } else {
           if (typeof value === 'string')
             options.where[key] = ILike(`%${value}%`)
@@ -90,11 +92,9 @@ export class TweetService {
       relations: ['likedBy']
     })
 
-    if (!tweet) throw new BadRequestException('Tweet not found')
-
     const user = await this.userRepository.findOne({ where: { id: userId } })
 
-    if (!user) throw new BadRequestException('User not found')
+    if (!tweet || !user) return null
 
     if (tweet.likedBy.find((user) => user.id === userId)) {
       tweet.likedBy = tweet.likedBy.filter((user) => user.id !== userId)
@@ -114,5 +114,35 @@ export class TweetService {
     if (!tweet) return null
 
     return tweet.likedBy
+  }
+
+  async retweet(id: Tweet['id'], userId: User['id']): Promise<Tweet | null> {
+    const tweet = await this.tweetRepository.findOne({
+      where: { id },
+      relations: ['retweetedBy']
+    })
+
+    const user = await this.userRepository.findOne({ where: { id: userId } })
+
+    if (!tweet || !user) return null
+
+    if (tweet.retweetedBy.find((user) => user.id === userId)) {
+      tweet.retweetedBy = tweet.retweetedBy.filter((user) => user.id !== userId)
+    } else {
+      tweet.retweetedBy.push(user)
+    }
+
+    return await this.tweetRepository.save(tweet)
+  }
+
+  async retweets(id: Tweet['id']): Promise<User[] | null> {
+    const tweet = await this.tweetRepository.findOne({
+      where: { id },
+      relations: ['retweetedBy']
+    })
+
+    if (!tweet) return null
+
+    return tweet.retweetedBy
   }
 }

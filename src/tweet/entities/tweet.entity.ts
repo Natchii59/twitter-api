@@ -41,4 +41,24 @@ export class Tweet extends Node {
     }
   })
   likedBy: User[]
+
+  @RelationId((tweet: Tweet) => tweet.likedBy)
+  likedByIds: User['id'][]
+
+  @ManyToMany(() => User, (user) => user.retweetedTweets)
+  @JoinTable({
+    name: 'tweets_retweets',
+    joinColumn: {
+      name: 'tweet',
+      referencedColumnName: 'id'
+    },
+    inverseJoinColumn: {
+      name: 'user',
+      referencedColumnName: 'id'
+    }
+  })
+  retweetedBy: User[]
+
+  @RelationId((tweet: Tweet) => tweet.retweetedBy)
+  retweetedByIds: User['id'][]
 }

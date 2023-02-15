@@ -18,8 +18,11 @@ type Tweet {
   """Get the user who created the tweet"""
   user: User!
 
-  """Get the number of likes of a tweet"""
+  """Get the users who liked the tweet"""
   likes: [User!]!
+
+  """Get the users who retweeted the tweet"""
+  retweets: [User!]!
 }
 
 """
@@ -195,10 +198,16 @@ type Mutation {
   DeleteTweet(
     """Id of tweet"""
     id: ID!
-  ): Tweet!
+  ): ID!
 
   """Like a tweet"""
   LikeTweet(
+    """Id of tweet"""
+    id: ID!
+  ): Tweet!
+
+  """Retweet a tweet"""
+  Retweet(
     """Id of tweet"""
     id: ID!
   ): Tweet!

@@ -37,6 +37,11 @@ export class User extends Node {
   })
   likedTweets: Tweet[]
 
+  @ManyToMany(() => Tweet, (tweet) => tweet.retweetedBy, {
+    onDelete: 'CASCADE'
+  })
+  retweetedTweets: Tweet[]
+
   @ManyToMany(() => User, (user) => user.following, {
     onDelete: 'CASCADE'
   })
