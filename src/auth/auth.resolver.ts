@@ -28,7 +28,7 @@ export class AuthResolver {
     name: 'SignUp',
     description: 'Sign up User'
   })
-  async signUp(@Args('input') input: CreateUserInput) {
+  async signUp(@Args('input') input: CreateUserInput): Promise<SignUpOutput> {
     return await this.authService.signUp(input)
   }
 
@@ -37,16 +37,19 @@ export class AuthResolver {
     name: 'SignIn',
     description: 'Sign in User'
   })
-  async signIn(@Args() _args: SignInArgs, @CurrentUser() user: UserPayload) {
+  async signIn(
+    @Args() _args: SignInArgs,
+    @CurrentUser() user: UserPayload
+  ): Promise<SignInOutput> {
     return await this.authService.signIn(user)
   }
 
   @UseGuards(JwtAuthGuard)
   @Query(() => Boolean, {
-    name: 'LogOut',
-    description: 'LogOut current user'
+    name: 'Logout',
+    description: 'Logout current user'
   })
-  async logout(@CurrentUser() user: UserPayload) {
+  async logout(@CurrentUser() user: UserPayload): Promise<boolean> {
     await this.authService.logout(user.id)
     return true
   }
@@ -54,9 +57,10 @@ export class AuthResolver {
   @UseGuards(JwtAuthGuard)
   @Query(() => User, {
     name: 'Profile',
-    description: 'Get current user'
+    description: 'Get current user',
+    nullable: true
   })
-  async profile(@CurrentUser() currentUser: UserPayload) {
+  async profile(@CurrentUser() currentUser: UserPayload): Promise<User | null> {
     return await this.userService.findOne({ id: currentUser.id })
   }
 
@@ -65,7 +69,7 @@ export class AuthResolver {
     name: 'RefreshTokens',
     description: 'Refresh Tokens of current user'
   })
-  async refreshTokens(@CurrentUser() user: UserPayload) {
+  async refreshTokens(@CurrentUser() user: UserPayload): Promise<TokensOutput> {
     return await this.authService.refreshTokens(user.id, user.refreshToken)
   }
 }

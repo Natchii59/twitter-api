@@ -54,7 +54,7 @@ export class UserService {
     return await this.userRepository.findOneBy({ id })
   }
 
-  async remove(id: User['id']): Promise<User['id'] | null> {
+  async delete(id: User['id']): Promise<User['id'] | null> {
     const user = await this.userRepository.delete(id)
 
     if (user.affected == 0) return null
@@ -68,10 +68,7 @@ export class UserService {
       relations: ['following']
     })
 
-    const follow = await this.userRepository.findOne({
-      where: { id: followId },
-      relations: ['followers']
-    })
+    const follow = await this.userRepository.findOneBy({ id: followId })
 
     if (!user || !follow) return null
 

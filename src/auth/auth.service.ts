@@ -8,7 +8,7 @@ import { JwtService } from '@nestjs/jwt'
 import { compare } from 'bcrypt'
 
 import { UserPayload } from './dto/payload-user.dto'
-import { CreateUserInput } from 'src/user/dto/create-user.input'
+import { CreateUserInput } from '../user/dto/create-user.input'
 import { SignInOutput, SignUpOutput, TokensOutput } from './dto/auth.dto'
 import { User } from '../user/entities/user.entity'
 import { UserService } from '../user/user.service'
@@ -25,7 +25,7 @@ export class AuthService {
   async validateUser(
     email: User['email'],
     password: User['password']
-  ): Promise<UserPayload> {
+  ): Promise<UserPayload | null> {
     const user = await this.userService.findOne({ email })
 
     if (user && (await compare(password, user.password))) {

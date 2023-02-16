@@ -41,7 +41,7 @@ export class TweetResolver {
   async create(
     @Args('input') input: CreateTweetInput,
     @CurrentUser() user: UserPayload
-  ) {
+  ): Promise<Tweet> {
     return await this.tweetService.create(input, user.id)
   }
 
@@ -49,75 +49,84 @@ export class TweetResolver {
     name: 'PaginationTweet',
     description: 'Find all tweets with pagination'
   })
-  async pagination(@Args() args: PaginationTweetArgs) {
+  async pagination(
+    @Args() args: PaginationTweetArgs
+  ): Promise<PaginationTweet> {
     return await this.tweetService.pagination(args)
   }
 
   @Query(() => Tweet, {
     name: 'FindOneTweet',
-    description: 'Find one tweet'
+    description: 'Find one tweet',
+    nullable: true
   })
-  findOne(@Args() args: FindOneTweetArgs) {
+  findOne(@Args() args: FindOneTweetArgs): Promise<Tweet | null> {
     return this.tweetService.findOne(args.id)
   }
 
   @UseGuards(JwtAuthGuard)
   @Mutation(() => ID, {
     name: 'DeleteTweet',
-    description: 'Delete a tweet'
+    description: 'Delete a tweet',
+    nullable: true
   })
-  async removeTweet(
+  async deleteTweet(
     @Args() args: DeleteTweetArgs,
     @CurrentUser() user: UserPayload
-  ) {
-    return this.tweetService.remove(args.id, user.id)
+  ): Promise<Tweet['id'] | null> {
+    return this.tweetService.delete(args.id, user.id)
   }
 
   @ResolveField(() => User, {
     name: 'user',
-    description: 'Get the user who created the tweet'
+    description: 'Get the user who created the tweet',
+    nullable: true
   })
-  async user(@Parent() tweet: Tweet) {
+  async user(@Parent() tweet: Tweet): Promise<User | null> {
     return await this.userService.findOne({ id: tweet.userId })
   }
 
   @UseGuards(JwtAuthGuard)
   @Mutation(() => Tweet, {
     name: 'LikeTweet',
-    description: 'Like a tweet'
+    description: 'Like a tweet',
+    nullable: true
   })
   async likeTweet(
     @Args() args: LikeTweetArgs,
     @CurrentUser() user: UserPayload
-  ) {
+  ): Promise<Tweet | null> {
     return await this.tweetService.like(args.id, user.id)
   }
 
   @ResolveField(() => [User], {
     name: 'likes',
-    description: 'Get the users who liked the tweet'
+    description: 'Get the users who liked the tweet',
+    nullable: true
   })
-  async likes(@Parent() tweet: Tweet) {
+  async likes(@Parent() tweet: Tweet): Promise<User[] | null> {
     return await this.tweetService.likes(tweet.id)
   }
 
   @UseGuards(JwtAuthGuard)
   @Mutation(() => Tweet, {
     name: 'Retweet',
-    description: 'Retweet a tweet'
+    description: 'Retweet a tweet',
+    nullable: true
   })
   async retweet(
     @Args() args: RetweetTweetArgs,
     @CurrentUser() user: UserPayload
-  ) {
+  ): Promise<Tweet | null> {
     return await this.tweetService.retweet(args.id, user.id)
   }
 
   @ResolveField(() => [User], {
     name: 'retweets',
-    description: 'Get the users who retweeted the tweet'
+    description: 'Get the users who retweeted the tweet',
+    nullable: true
   })
-  async retweets(@Parent() tweet: Tweet) {
+  async retweets(@Parent() tweet: Tweet): Promise<User[] | null> {
     return await this.tweetService.retweets(tweet.id)
   }
 }

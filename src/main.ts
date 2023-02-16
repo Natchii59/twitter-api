@@ -10,6 +10,16 @@ async function bootstrap() {
     new ValidationPipe({
       exceptionFactory(errors) {
         const messages = errors.map((error) => {
+          if (error.children.length > 0) {
+            return error.children.map((child) => {
+              const msg = Object.values(child.constraints)[0]
+              return {
+                code: `${error.property}.${child.property}`,
+                message: msg
+              }
+            })
+          }
+
           const msg = Object.values(error.constraints)[0]
           return { code: error.property, message: msg }
         })

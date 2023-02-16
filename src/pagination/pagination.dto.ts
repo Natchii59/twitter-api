@@ -7,9 +7,16 @@ import {
   InterfaceType,
   registerEnumType
 } from '@nestjs/graphql'
-import { IsInt, IsNotEmpty } from 'class-validator'
+import {
+  IsInt,
+  IsNotEmpty,
+  IsUUID,
+  ValidateIf,
+  ValidateNested
+} from 'class-validator'
 
 import { Node } from '../database/entities/node.entity'
+import { Type } from 'class-transformer'
 
 export enum SortDirection {
   ASC,
@@ -23,14 +30,14 @@ registerEnumType(SortDirection, {
 @InputType()
 export class PaginationSortBy {
   @Field(() => SortDirection, {
-    nullable: true,
-    description: 'Sort by date of creation'
+    description: 'Sort by date of creation',
+    nullable: true
   })
   createdAt?: SortDirection
 
   @Field(() => SortDirection, {
-    nullable: true,
-    description: 'Sort by date of last update'
+    description: 'Sort by date of last update',
+    nullable: true
   })
   updatedAt?: SortDirection
 }
@@ -38,25 +45,29 @@ export class PaginationSortBy {
 @InputType()
 export class PaginationWhere {
   @Field(() => ID, { nullable: true, description: 'Filter by id' })
+  @IsUUID('all', { message: "L'identifiant est invalide" })
+  @ValidateIf((_o, v) => v !== undefined)
   id?: string
 }
 
 @ArgsType()
 export class PaginationArgs {
   @Field(() => Int, { description: 'Skip the first n nodes' })
-  @IsNotEmpty()
-  @IsInt()
+  @IsInt({ message: 'Le nombre de noeuds à ignorer doit être un entier' })
   skip: number
 
   @Field(() => Int, { description: 'Take the first n nodes' })
-  @IsNotEmpty()
-  @IsInt()
+  @IsInt({ message: 'Le nombre de noeuds à prendre doit être un entier' })
   take: number
 
-  @Field(() => PaginationSortBy, { nullable: true, description: 'Sort nodes' })
+  @Field(() => PaginationSortBy, { description: 'Sort nodes', nullable: true })
+  @ValidateNested({ each: true })
+  @Type(() => PaginationSortBy)
   sortBy?: PaginationSortBy
 
-  @Field(() => PaginationWhere, { nullable: true, description: 'Filter nodes' })
+  @Field(() => PaginationWhere, { description: 'Filter nodes', nullable: true })
+  @ValidateNested({ each: true })
+  @Type(() => PaginationWhere)
   where?: PaginationWhere
 }
 

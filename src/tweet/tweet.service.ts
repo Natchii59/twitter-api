@@ -67,11 +67,11 @@ export class TweetService {
     }
   }
 
-  async findOne(id: Tweet['id']): Promise<Tweet> {
+  async findOne(id: Tweet['id']): Promise<Tweet | null> {
     return await this.tweetRepository.findOneBy({ id })
   }
 
-  async remove(
+  async delete(
     id: Tweet['id'],
     userId: User['id']
   ): Promise<Tweet['id'] | null> {
@@ -92,7 +92,7 @@ export class TweetService {
       relations: ['likedBy']
     })
 
-    const user = await this.userRepository.findOne({ where: { id: userId } })
+    const user = await this.userRepository.findOneBy({ id: userId })
 
     if (!tweet || !user) return null
 
@@ -122,7 +122,7 @@ export class TweetService {
       relations: ['retweetedBy']
     })
 
-    const user = await this.userRepository.findOne({ where: { id: userId } })
+    const user = await this.userRepository.findOneBy({ id: userId })
 
     if (!tweet || !user) return null
 

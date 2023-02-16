@@ -16,13 +16,13 @@ type Tweet {
   text: String!
 
   """Get the user who created the tweet"""
-  user: User!
+  user: User
 
   """Get the users who liked the tweet"""
-  likes: [User!]!
+  likes: [User!]
 
   """Get the users who retweeted the tweet"""
-  retweets: [User!]!
+  retweets: [User!]
 }
 
 """
@@ -99,11 +99,11 @@ type Query {
   """Get a user by args"""
   FindOneUser(input: FindOneUserInput!): User
 
-  """LogOut current user"""
-  LogOut: Boolean!
+  """Logout current user"""
+  Logout: Boolean!
 
   """Get current user"""
-  Profile: User!
+  Profile: User
 
   """Refresh Tokens of current user"""
   RefreshTokens: TokensOutput!
@@ -125,12 +125,12 @@ type Query {
   FindOneTweet(
     """Id of tweet"""
     id: ID!
-  ): Tweet!
+  ): Tweet
 }
 
 input FindOneUserInput {
   """Username of user"""
-  id: String
+  id: ID
 
   """Username of user"""
   username: String
@@ -160,7 +160,7 @@ input PaginationTweetWhere {
   text: String
 
   """Filter by user id"""
-  userId: String
+  userId: ID
 
   """Filter by username"""
   username: String
@@ -170,8 +170,8 @@ type Mutation {
   """Update a user"""
   UpdateUser(input: UpdateUserInput!): User
 
-  """Remove a user"""
-  RemoveUser: User
+  """Delete a user"""
+  DeleteUser: User
 
   """Follow a user"""
   FollowUser(
@@ -198,19 +198,19 @@ type Mutation {
   DeleteTweet(
     """Id of tweet"""
     id: ID!
-  ): ID!
+  ): ID
 
   """Like a tweet"""
   LikeTweet(
     """Id of tweet"""
     id: ID!
-  ): Tweet!
+  ): Tweet
 
   """Retweet a tweet"""
   Retweet(
     """Id of tweet"""
     id: ID!
-  ): Tweet!
+  ): Tweet
 }
 
 input UpdateUserInput {

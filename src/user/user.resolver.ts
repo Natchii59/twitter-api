@@ -13,8 +13,8 @@ import { User } from './entities/user.entity'
 import { UpdateUserInput } from './dto/update-user.input'
 import { FindOneUserInput } from './dto/findone-user.input'
 import { Services } from '../utils/constants'
-import { CurrentUser, JwtAuthGuard } from 'src/auth/guards/jwt.guard'
-import { UserPayload } from 'src/auth/dto/payload-user.dto'
+import { CurrentUser, JwtAuthGuard } from '../auth/guards/jwt.guard'
+import { UserPayload } from '../auth/dto/payload-user.dto'
 import { FollowUserArgs } from './dto/follow-user.input'
 
 @Resolver(User)
@@ -28,7 +28,7 @@ export class UserResolver {
     description: 'Get a user by args',
     nullable: true
   })
-  async findOne(@Args('input') input: FindOneUserInput) {
+  async findOne(@Args('input') input: FindOneUserInput): Promise<User | null> {
     return await this.userService.findOne(input)
   }
 
@@ -41,18 +41,18 @@ export class UserResolver {
   async update(
     @Args('input') input: UpdateUserInput,
     @CurrentUser() user: UserPayload
-  ) {
+  ): Promise<User | null> {
     return await this.userService.update(user.id, input)
   }
 
   @UseGuards(JwtAuthGuard)
   @Mutation(() => User, {
-    name: 'RemoveUser',
-    description: 'Remove a user',
+    name: 'DeleteUser',
+    description: 'Delete a user',
     nullable: true
   })
-  async remove(@CurrentUser() user: UserPayload) {
-    return await this.userService.remove(user.id)
+  async delete(@CurrentUser() user: UserPayload): Promise<User['id'] | null> {
+    return await this.userService.delete(user.id)
   }
 
   @UseGuards(JwtAuthGuard)
@@ -61,7 +61,10 @@ export class UserResolver {
     description: 'Follow a user',
     nullable: true
   })
-  async follow(@Args() args: FollowUserArgs, @CurrentUser() user: UserPayload) {
+  async follow(
+    @Args() args: FollowUserArgs,
+    @CurrentUser() user: UserPayload
+  ): Promise<User | null> {
     return await this.userService.follow(user.id, args.id)
   }
 
@@ -70,7 +73,7 @@ export class UserResolver {
     description: 'Get a user following',
     nullable: true
   })
-  async following(@Parent() user: User) {
+  async following(@Parent() user: User): Promise<User['following'] | null> {
     return await this.userService.following(user.id)
   }
 
@@ -79,7 +82,7 @@ export class UserResolver {
     description: 'Get a user followers',
     nullable: true
   })
-  async followers(@Parent() user: User) {
+  async followers(@Parent() user: User): Promise<User['followers'] | null> {
     return await this.userService.followers(user.id)
   }
 }
