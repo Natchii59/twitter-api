@@ -32,11 +32,11 @@ export class Tweet extends Node {
   @JoinTable({
     name: 'tweets_likes',
     joinColumn: {
-      name: 'tweet',
+      name: 'tweet_id',
       referencedColumnName: 'id'
     },
     inverseJoinColumn: {
-      name: 'user',
+      name: 'user_id',
       referencedColumnName: 'id'
     }
   })
@@ -49,11 +49,11 @@ export class Tweet extends Node {
   @JoinTable({
     name: 'tweets_retweets',
     joinColumn: {
-      name: 'tweet',
+      name: 'tweet_id',
       referencedColumnName: 'id'
     },
     inverseJoinColumn: {
-      name: 'user',
+      name: 'user_id',
       referencedColumnName: 'id'
     }
   })
