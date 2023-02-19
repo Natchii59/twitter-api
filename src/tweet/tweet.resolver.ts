@@ -5,7 +5,8 @@ import {
   Args,
   ResolveField,
   Parent,
-  ID
+  ID,
+  Int
 } from '@nestjs/graphql'
 import { Inject, UseGuards } from '@nestjs/common'
 
@@ -25,6 +26,7 @@ import {
   PaginationTweetArgs
 } from './dto/pagination-tweet.dto'
 import { RetweetTweetArgs } from './dto/retweet-tweet.input'
+import { ReplyTweetInput } from './dto/reply-tweet.input'
 
 @Resolver(() => Tweet)
 export class TweetResolver {
@@ -128,5 +130,36 @@ export class TweetResolver {
   })
   async retweets(@Parent() tweet: Tweet): Promise<User[] | null> {
     return await this.tweetService.retweets(tweet.id)
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Mutation(() => Tweet, {
+    name: 'ReplyTweet',
+    description: 'Reply to a tweet',
+    nullable: true
+  })
+  async replyTweet(
+    @Args('input') input: ReplyTweetInput,
+    @CurrentUser() user: UserPayload
+  ): Promise<Tweet | null> {
+    return await this.tweetService.reply(input, user.id)
+  }
+
+  @ResolveField(() => Tweet, {
+    name: 'replyTo',
+    description: 'Get the tweet to which the tweet is a reply',
+    nullable: true
+  })
+  async replyTo(@Parent() tweet: Tweet): Promise<Tweet | null> {
+    return await this.tweetService.replyTo(tweet.id)
+  }
+
+  @ResolveField(() => Int, {
+    name: 'repliesCount',
+    description: 'Get the number of replies to the tweet',
+    nullable: true
+  })
+  async repliesCount(@Parent() tweet: Tweet): Promise<number | null> {
+    return await this.tweetService.repliesCount(tweet.id)
   }
 }

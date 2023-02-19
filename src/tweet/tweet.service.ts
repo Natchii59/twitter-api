@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { FindManyOptions, ILike, Repository } from 'typeorm'
+import { FindManyOptions, ILike, LessThanOrEqual, Repository } from 'typeorm'
 
 import { CreateTweetInput } from './dto/create-tweet.input'
 import { Tweet } from './entities/tweet.entity'
@@ -10,6 +10,7 @@ import {
   PaginationTweetArgs
 } from './dto/pagination-tweet.dto'
 import { SortDirection } from '../pagination/pagination.dto'
+import { ReplyTweetInput } from './dto/reply-tweet.input'
 
 @Injectable()
 export class TweetService {
@@ -43,6 +44,16 @@ export class TweetService {
             { user: { username: value } },
             { retweetedBy: { username: value } }
           ]
+        } else if (key === 'userId') {
+          options.where = [
+            { user: { id: value } },
+            { retweetedBy: { id: value } }
+          ]
+        } else if (key === 'replyTo') {
+          options.where['replyTo'] = {}
+          options.where['replyTo']['id'] = value
+        } else if (key === 'createdAt') {
+          options.where['createdAt'] = LessThanOrEqual(value)
         } else {
           if (typeof value === 'string')
             options.where[key] = ILike(`%${value}%`)
@@ -75,9 +86,12 @@ export class TweetService {
     id: Tweet['id'],
     userId: User['id']
   ): Promise<Tweet['id'] | null> {
-    const tweet = await this.findOne(id)
+    const tweet = await this.tweetRepository.findOne({
+      where: { id },
+      relations: ['user']
+    })
 
-    if (tweet.userId !== userId) return null
+    if (tweet.user.id !== userId) return null
 
     const result = await this.tweetRepository.delete(id)
 
@@ -144,5 +158,57 @@ export class TweetService {
     if (!tweet) return null
 
     return tweet.retweetedBy
+  }
+
+  async reply(
+    input: ReplyTweetInput,
+    userId: User['id']
+  ): Promise<Tweet | null> {
+    const tweet = await this.tweetRepository.findOneBy({
+      id: input.id
+    })
+
+    if (!tweet) return null
+
+    const reply = this.tweetRepository.create({
+      text: input.text,
+      user: { id: userId },
+      replyTo: tweet
+    })
+
+    return await this.tweetRepository.save(reply)
+  }
+
+  async replyTo(id: Tweet['id']): Promise<Tweet | null> {
+    const tweet = await this.tweetRepository.findOne({
+      where: { id },
+      relations: ['replyTo']
+    })
+
+    if (!tweet) return null
+
+    return tweet.replyTo
+  }
+
+  async replies(id: Tweet['id']): Promise<Tweet[] | null> {
+    const tweet = await this.tweetRepository.findOne({
+      where: { id },
+      relations: ['replies']
+    })
+
+    if (!tweet) return null
+
+    return tweet.replies
+  }
+
+  async repliesCount(id: Tweet['id']): Promise<number | null> {
+    const tweet = await this.tweetRepository.findOne({
+      where: { id },
+      relations: ['replies']
+    })
+
+    if (!tweet) return null
+
+    return tweet.replies.length
   }
 }

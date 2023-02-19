@@ -1,5 +1,11 @@
 import { ArgsType, Field, ID, InputType, ObjectType } from '@nestjs/graphql'
-import { IsUUID, MaxLength, ValidateIf, ValidateNested } from 'class-validator'
+import {
+  IsDate,
+  IsUUID,
+  MaxLength,
+  ValidateIf,
+  ValidateNested
+} from 'class-validator'
 import { Type } from 'class-transformer'
 
 import {
@@ -27,6 +33,19 @@ export class PaginationTweetWhere extends PaginationWhere {
   @Field(() => String, { description: 'Filter by username', nullable: true })
   @ValidateIf((_o, v) => v !== undefined)
   username?: User['username']
+
+  @Field(() => ID, { description: 'Filter by reply to', nullable: true })
+  @IsUUID('all', { message: "L'identifiant du Tweet est invalide." })
+  @ValidateIf((_o, v) => v !== undefined)
+  replyTo?: Tweet['id']
+
+  @Field(() => Date, {
+    description: 'Filter by createdAt date',
+    nullable: true
+  })
+  @IsDate({ message: 'La date de création est invalide.' })
+  @ValidateIf((_o, v) => v !== undefined)
+  createdAt?: Date
 }
 
 @ArgsType()

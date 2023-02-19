@@ -6,6 +6,7 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   RelationId
 } from 'typeorm'
 
@@ -61,4 +62,17 @@ export class Tweet extends Node {
 
   @RelationId((tweet: Tweet) => tweet.retweetedBy)
   retweetedByIds: User['id'][]
+
+  @ManyToOne(() => Tweet, (tweet) => tweet.replies, {
+    onDelete: 'CASCADE',
+    nullable: true
+  })
+  @JoinColumn({ name: 'reply_to' })
+  replyTo?: Tweet
+
+  @RelationId((tweet: Tweet) => tweet.replyTo)
+  replyToId?: Tweet['id']
+
+  @OneToMany(() => Tweet, (tweet) => tweet.replyTo)
+  replies: Tweet[]
 }
