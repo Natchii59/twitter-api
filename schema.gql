@@ -124,7 +124,7 @@ type Query {
 
     """Sort nodes"""
     sortBy: PaginationSortBy
-    where: PaginationTweetWhere
+    where: [PaginationTweetWhere]
   ): PaginationTweet!
 
   """Find one tweet"""
@@ -164,18 +164,22 @@ input PaginationTweetWhere {
 
   """Filter by content"""
   text: String
-
-  """Filter by user id"""
-  userId: ID
-
-  """Filter by username"""
-  username: String
+  user: PaginationTweetUserWhere
+  retweetedBy: PaginationTweetUserWhere
 
   """Filter by reply to"""
   replyTo: ID
 
   """Filter by createdAt date"""
   createdAt: DateTime
+}
+
+input PaginationTweetUserWhere {
+  """Filter by user id"""
+  userId: ID
+
+  """Filter by username"""
+  username: String
 }
 
 type Mutation {

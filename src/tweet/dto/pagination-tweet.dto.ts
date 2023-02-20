@@ -17,6 +17,21 @@ import { Tweet } from '../entities/tweet.entity'
 import { User } from '../../user/entities/user.entity'
 
 @InputType()
+export class PaginationTweetUserWhere {
+  @Field(() => ID, {
+    description: 'Filter by user id',
+    nullable: true
+  })
+  @IsUUID('all', { message: "L'identifiant de l'utilisateur est invalide." })
+  @ValidateIf((_o, v) => v !== undefined)
+  userId?: User['id']
+
+  @Field(() => String, { description: 'Filter by username', nullable: true })
+  @ValidateIf((_o, v) => v !== undefined)
+  username?: User['username']
+}
+
+@InputType()
 export class PaginationTweetWhere extends PaginationWhere {
   @Field(() => String, { description: 'Filter by content', nullable: true })
   @MaxLength(280, {
@@ -25,14 +40,15 @@ export class PaginationTweetWhere extends PaginationWhere {
   @ValidateIf((_o, v) => v !== undefined)
   text?: Tweet['text']
 
-  @Field(() => ID, { description: 'Filter by user id', nullable: true })
-  @IsUUID('all', { message: "L'identifiant de l'utilisateur est invalide." })
-  @ValidateIf((_o, v) => v !== undefined)
-  userId?: User['id']
+  @Field(() => PaginationTweetUserWhere, { nullable: true })
+  @ValidateNested()
+  @Type(() => PaginationTweetUserWhere)
+  user?: PaginationTweetUserWhere
 
-  @Field(() => String, { description: 'Filter by username', nullable: true })
-  @ValidateIf((_o, v) => v !== undefined)
-  username?: User['username']
+  @Field(() => PaginationTweetUserWhere, { nullable: true })
+  @ValidateNested()
+  @Type(() => PaginationTweetUserWhere)
+  retweetedBy?: PaginationTweetUserWhere
 
   @Field(() => ID, { description: 'Filter by reply to', nullable: true })
   @IsUUID('all', { message: "L'identifiant du Tweet est invalide." })
@@ -50,10 +66,10 @@ export class PaginationTweetWhere extends PaginationWhere {
 
 @ArgsType()
 export class PaginationTweetArgs extends PaginationArgs {
-  @Field(() => PaginationTweetWhere, { nullable: true })
-  @ValidateNested()
+  @Field(() => [PaginationTweetWhere], { nullable: 'itemsAndList' })
+  @ValidateNested({ each: true })
   @Type(() => PaginationTweetWhere)
-  where?: PaginationTweetWhere
+  where?: PaginationTweetWhere[]
 }
 
 @ObjectType()

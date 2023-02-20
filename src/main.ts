@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core'
 import { BadRequestException, ValidationPipe } from '@nestjs/common'
 
 import { AppModule } from './app.module'
+import { formatErrorMessages } from './utils/functions'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
@@ -9,20 +10,7 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       exceptionFactory(errors) {
-        const messages = errors.map((error) => {
-          if (error.children.length > 0) {
-            return error.children.map((child) => {
-              const msg = Object.values(child.constraints)[0]
-              return {
-                code: `${error.property}.${child.property}`,
-                message: msg
-              }
-            })
-          }
-
-          const msg = Object.values(error.constraints)[0]
-          return { code: error.property, message: msg }
-        })
+        const messages = formatErrorMessages(errors)
         return new BadRequestException(messages)
       }
     })

@@ -1,6 +1,12 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { FindManyOptions, ILike, LessThanOrEqual, Repository } from 'typeorm'
+import {
+  FindManyOptions,
+  FindOptionsWhere,
+  ILike,
+  LessThanOrEqual,
+  Repository
+} from 'typeorm'
 
 import { CreateTweetInput } from './dto/create-tweet.input'
 import { Tweet } from './entities/tweet.entity'
@@ -36,30 +42,47 @@ export class TweetService {
     }
 
     if (args.where) {
-      options.where = {}
+      options.where = args.where.map((where) => {
+        const whereObject: FindOptionsWhere<Tweet> = {}
 
-      Object.entries(args.where).forEach(([key, value]) => {
-        if (key === 'username') {
-          options.where = [
-            { user: { username: value } },
-            { retweetedBy: { username: value } }
-          ]
-        } else if (key === 'userId') {
-          options.where = [
-            { user: { id: value } },
-            { retweetedBy: { id: value } }
-          ]
-        } else if (key === 'replyTo') {
-          options.where['replyTo'] = {}
-          options.where['replyTo']['id'] = value
-        } else if (key === 'createdAt') {
-          options.where['createdAt'] = LessThanOrEqual(value)
-        } else {
-          if (typeof value === 'string')
-            options.where[key] = ILike(`%${value}%`)
-          else options.where[key] = value
+        if (where.id) whereObject.id = where.id
+
+        if (where.text) whereObject.text = ILike(`%${where.text}%`)
+
+        if (where.createdAt)
+          whereObject.createdAt = LessThanOrEqual(where.createdAt)
+
+        if (where.replyTo) {
+          whereObject.replyTo = {}
+
+          if (where.replyTo) whereObject.replyTo.id = where.replyTo
         }
-      })
+
+        if (where.user) {
+          whereObject.user = {}
+
+          if (where.user.userId) whereObject.user.id = where.user.userId
+          if (where.user.username)
+            whereObject.user.username = where.user.username
+
+          if (Object.keys(whereObject.user).length === 0)
+            delete whereObject.user
+        }
+
+        if (where.retweetedBy) {
+          whereObject.retweetedBy = {}
+
+          if (where.retweetedBy.userId)
+            whereObject.retweetedBy.id = where.retweetedBy.userId
+          if (where.retweetedBy.username)
+            whereObject.retweetedBy.username = where.retweetedBy.username
+
+          if (Object.keys(whereObject.retweetedBy).length === 0)
+            delete whereObject.retweetedBy
+        }
+
+        return whereObject
+      }) as FindOptionsWhere<Tweet>
     }
 
     if (args.sortBy) {

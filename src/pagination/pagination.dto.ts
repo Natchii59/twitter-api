@@ -7,13 +7,7 @@ import {
   InterfaceType,
   registerEnumType
 } from '@nestjs/graphql'
-import {
-  IsInt,
-  IsNotEmpty,
-  IsUUID,
-  ValidateIf,
-  ValidateNested
-} from 'class-validator'
+import { IsInt, IsUUID, ValidateIf, ValidateNested } from 'class-validator'
 
 import { Node } from '../database/entities/node.entity'
 import { Type } from 'class-transformer'
@@ -65,10 +59,13 @@ export class PaginationArgs {
   @Type(() => PaginationSortBy)
   sortBy?: PaginationSortBy
 
-  @Field(() => PaginationWhere, { description: 'Filter nodes', nullable: true })
+  @Field(() => [PaginationWhere], {
+    description: 'Filter nodes',
+    nullable: 'itemsAndList'
+  })
   @ValidateNested({ each: true })
   @Type(() => PaginationWhere)
-  where?: PaginationWhere
+  where?: PaginationWhere[]
 }
 
 @InterfaceType()
